@@ -6,7 +6,7 @@ For now, take a look at the Haskell packages on hackage that this project
 includes:
 
 * [simple](http://hackage.haskell.org/package/simple) - core web framework
-* [postgresql-rom](http://hackage.haskell.org/package/postgresql-orm) - ORM for
+* [postgresql-orm](http://hackage.haskell.org/package/postgresql-orm) - ORM for
   PostgreSQL
 * [simple-postgresql-orm](http://hackage.haskell.org/package/simple-postgresql-orm) -
   connector package for _simple_ and _postgresql-orm_
