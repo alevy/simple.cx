@@ -1,2 +1,11 @@
-out/index.html: index.md template.html.tmpl
-	pandoc --template=template.html.tmpl index.md > out/index.html
+PAGES := $(shell ls *.md)
+PAGES_HTML := $(PAGES:%.md=out/%.html)
+
+all: $(PAGES_HTML)
+
+out/%.html: %.md template.html.tmpl
+	pandoc --toc --toc-depth=3 --template=template.html.tmpl $< > $@
+
+clean:
+	rm $(PAGES_HTML)
+

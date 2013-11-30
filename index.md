@@ -1,23 +1,32 @@
-# The Simple Web Framework
+---
+title: Home
+---
 
-Tutorials, documentation, examples and more coming soon!
+Simple is &quot;framework-less&quot; web framework for Haskell web
+applications. Unlike many other frameworks, Simple does not enforce a
+particular structure or paradigm for web applications. Rather, Simple
+provides enough infrastructure to help you create your own patterns (or
+re-create existing ones). Simple is minimalist, providing a lightweight
+base. Everything else (e.g. sessions, controllers, persistence,
+caching) is provided in composable units, so you can include only the
+ones you need in your app, and easily replace with your own components.
 
-For now, take a look at the Haskell packages on hackage that this project
-includes:
+##Quick Start
 
-* [simple](http://hackage.haskell.org/package/simple) - core web framework
-* [postgresql-orm](http://hackage.haskell.org/package/postgresql-orm) - ORM for
-  PostgreSQL
-* [simple-postgresql-orm](http://hackage.haskell.org/package/simple-postgresql-orm) -
-  connector package for _simple_ and _postgresql-orm_
-* [simple-templates](http://hackage.haskell.org/package/simple-templates) -
-  a simple but powerful templating language.
-* [simple-session](http://hackage.haskell.org/package/simple-session) - cookie-based
-  session management
+If you already have Haskell setup, you can install and create your first
+application with just a few simple commands:
 
-You can check out the full source code for all the packages:
+```bash
+$ cabal install simple
+$ smpl create test_app
+$ cd test_app
+$ cabal run
+```
 
-    git clone anonymous@gitstar.com:alevy/simple.git
-    
-The repo contains an example app (under the `blog-example/` folder).
+You can now navigate to your web app at
+[http://localhost:3000](http://localhost:3000)!
+
+You can expand your app with a persistent datastore, session data, templates
+and more. See [Getting Started](getting_started.html) for a more in depth
+tutorial.
 
