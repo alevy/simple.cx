@@ -7,5 +7,9 @@ out/%.html: %.md template.html.tmpl
 	pandoc --toc --toc-depth=3 --template=template.html.tmpl $< > $@
 
 clean:
-	rm $(PAGES_HTML)
+	rm -f $(PAGES_HTML)
+	rm -f simple.cx.tar.gz
+
+dist: all
+	tar cvzf simple.cx.tar.gz -C out .
 

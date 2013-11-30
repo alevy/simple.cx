@@ -53,3 +53,4 @@ which should print out the subcommands and options available for the `smpl`
 utility that comes with Simple.
 
 ### Creating the Blog application
+
