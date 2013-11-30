@@ -4,11 +4,17 @@ showtoc: true
 ---
 
 This getting started tutorial will get you up and running with a basic web
-application. At the end you will know (1) how install Simple, (2) how to create
-a Simple application from scratch, (3) the structure of a Simple application
-and (4) how to add persistence with PostgreSQL.
+application. At the end you will know
 
-## 1. Guide Assumptions
+1. how install Simple
+
+2. how to create a Simple application from scratch
+
+3. the structure of a Simple application
+
+4. how to add persistence with PostgreSQL.
+
+## Guide Assumptions
 
 This guide assumes you have a working version of the GHC Haskell compiler, the
 cabal package manager and an up-to-date version of the PostgreSQL database. The
@@ -26,11 +32,24 @@ good starting guide to Haskell see
 [Learn You a Haskell for Great Good!](http://learnyouahaskell.org)
 and/or [Real World Haskell](http://book.realworldhaskell.org/).
 
-## 2. Installation
+## Creating a new Simple app
 
-Install Simple using cabal:
+### Installing Simple
+
+Open up a terminal. Commands prefaced with a dollar sign ($) should be run in
+terminal. Use cabal to instal Simple:
 
 ```bash
 $ cabal install simple
 ```
 
+To verify that Simple installed properly run the following command:
+
+```bash
+$ smpl --help
+```
+
+which should print out the subcommands and options available for the `smpl`
+utility that comes with Simple.
+
+### Creating the Blog application

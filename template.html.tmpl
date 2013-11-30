@@ -6,29 +6,36 @@
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
-  <div id="navbar">
+  <div id="wrapper">
+    <div id="navbar">
+      <div class="content">
+        <header>
+          <h1><a href="/">Simple</a></h1>
+          <h2>a Haskell web framework</h2>
+        </header>
+        <ul class="nav">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="getting_started.html">Getting Started</a></li>
+          <li><a href="api.html">API</a></li>
+        </ul>
+      </div>
+    </div>
     <div class="content">
-      <header>
-        <h1><a href="/">Simple</a></h1>
-        <h2>a Haskell web framework</h2>
-      </header>
-      <ul class="nav">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="getting_started.html">Getting Started</a></li>
-        <li><a href="api.html">API</a></li>
-      </ul>
+$if(showtoc)$
+      <section id="toc">
+$toc$
+      </section>
+$endif$
+      <section id="river">
+      <h1>$title$</h1>
+$body$
+      </section>
     </div>
   </div>
-  <div class="content">
-$if(showtoc)$
-    <section id="toc">
-$toc$
-    </section>
-$endif$
-    <section id="river">
-    <h1>$title$</h1>
-$body$
-    </section>
-  </div>
+  <footer>
+    This work is licensed under a
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">
+      Creative Commons Attribution-Share Alike 4.0 License</a>.
+  </footer>
 </body>
 </html>
