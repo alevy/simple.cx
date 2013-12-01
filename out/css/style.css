@@ -24,6 +24,7 @@ h1, h2, h3 h4 {
 .content {
   max-width: 960px;
   margin: 0 auto;
+  padding-bottom: 10px;
 }
 
 #navbar {
@@ -43,12 +44,15 @@ h1, h2, h3 h4 {
 
 #navbar header h1 {
   font-family: Pacifico;
-  font-size: 150%;
+  font-weight: normal;
+  font-size: 27pt;
+  line-height: 36pt;
 }
 
 #navbar header h2 {
-  font-size: 90%;
+  font-size: 10pt;
   font-style: italic;
+  line-height: 20pt;
 }
 
 #navbar h1, #navbar h2 {
@@ -136,6 +140,23 @@ h1, h2, h3 h4 {
 #river p {
   text-align: justify;
 }
+
+#river table {
+  border: 2px solid #ccc;
+  border-collapse: collapse;
+}
+
+#river table th, #river table td {
+  border: 1px solid #ccc;
+  border-collapse: collapse;
+  padding: 9px 10px;
+}
+
+#river table th {
+  border-bottom: 2px solid #ccc;
+  background-color: #eee;
+}
+
 
 h1 {
   font-size: 175%;

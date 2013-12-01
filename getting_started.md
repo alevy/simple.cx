@@ -54,3 +54,73 @@ utility that comes with Simple.
 
 ### Creating the Blog application
 
+The `smpl` utility helps you create a new, blank Simple application from the
+command-line. To begin creating our application, open a terminal, navigate to a
+folder where you would like to create the project (for example `cd ~/hack`) and
+create a new Simple project called "blog":
+
+```bash
+$ smpl create blog
+```
+
+This will create a new subdirectory called "blog" containing your app. The
+directory contains a ready-to-run app, as well as some empty directories that
+are used for common tasks:
+
+| File/Folder    | Purpose                                                    |
+|----------------|------------------------------------------------------------|
+| Blog/          | Parent directory for app specific modules                  |
+| Blog/Common.hs | A base module that defines the application type            |
+| db/            | An empty directory for defining the database schema        |
+| templates/     | The default folder for defining view templates             |
+| views/         | The default folder for defining views                      |
+| Application.hs | Initial setup and route configuration                      |
+| blog.cabal     | Used by cabal to resolve package dependencies and compile the app|
+| Main.hs        | Contains the main function used to start the application   |
+
+## Getting up and running
+
+Our application is ready to start working on. Now we'll get a server up and
+running and start adding functionality to our application.
+
+### Starting the server
+
+Simple apps are built on top of the WAI package, and can be run with any WAI
+compatible server, like [warp](http://hackage.haskell.org/package/warp). The
+`smpl` utility helps you run your application in development mode. First,
+install the package `wai-handler-devel`:
+
+```bash
+$ cabal install wai-handler-devel
+```
+
+Now we can run the Simple development server. From your application directory,
+run:
+
+```bash
+$ smpl server
+```
+
+This will fire up `wai-handler-devel` on port 3000, and set the environment
+variable "ENV" to "development". To see your application in action, open a
+browser and navigate to [http://localhost:3000/](http://localhost:3000).
+
+You can of course compile and run your application (in fact, this is probably
+how you will deploy your app, as wai-handler-devel is not suitable for
+production).
+
+```bash
+$ cabal run
+```
+
+This will compile and run `Main.hs`, which by default runs your application
+using warp on port 3000. You can specify a different port by setting the "PORT"
+environment variable, for example:
+
+```bash
+$ PORT=8080 cabal run
+```
+
+
+### Adding a controller
+
