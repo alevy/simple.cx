@@ -101,26 +101,28 @@ run:
 $ smpl server
 ```
 
-This will fire up `wai-handler-devel` on port 3000, and set the environment
+This will fire up `wai-handler-devel` on port _3000_, and set the environment
 variable "ENV" to "development". To see your application in action, open a
-browser and navigate to [http://localhost:3000/](http://localhost:3000).
+browser and navigate to [http://localhost:3000/](http://localhost:3000). You
+should see a blank HTML page with just "Hello World":
 
-You can of course compile and run your application (in fact, this is probably
-how you will deploy your app, as wai-handler-devel is not suitable for
-production).
+![](images/screenshot-hello.png "\"Hello World\" Screenshot")
+
+You can of course compile and run your application without the `smpl` utility
+(in fact, this is probably how you will deploy your app, as wai-handler-devel
+is not suitable for production).
 
 ```bash
 $ cabal run
 ```
 
 This will compile and run `Main.hs`, which by default runs your application
-using warp on port 3000. You can specify a different port by setting the "PORT"
-environment variable, for example:
+using warp on port _3000_. You can specify a different port by setting the "PORT"
+environment variable, for example, to run the application on port _8080_:
 
 ```bash
 $ PORT=8080 cabal run
 ```
-
 
 ### Adding a controller
 
