@@ -19,6 +19,6 @@ You can check out the full source code for all the packages:
 ```bash
 git clone anonymous@gitstar.com:alevy/simple.git
 ```
-    
+
 The repo contains an example app (under the `blog-example/` folder).
 

@@ -165,6 +165,15 @@ h1, h2, h3 h4 {
   border: 1px solid #ccc;
 }
 
+.figure {
+  padding: 10px 0;
+}
+
+aside {
+  background: url("../images/tab_info.gif") no-repeat scroll left top rgb(213, 233, 246);
+  padding: 0.25em 1em 0.25em 48px;
+}
+
 h1 {
   font-size: 175%;
 }
@@ -184,11 +193,13 @@ hr {
 }
 
 code {
-  background-color: #ddd;
-  border-radius: 1px;
-  padding: 1px;
+  background-color: #FDF6E3;
+  border-radius: 3px;
+  box-shadow: 1px 1px 5px #ccc;
+  padding: 2px;
   font-family: Ubuntu Mono, monospace;
   white-space: nowrap;
+  font-weight: 700;
 }
 
 pre {
@@ -223,8 +234,7 @@ footer {
   width: 100%;
   background-color: #333;
   color: white;
-  text-align: center;
-  padding: 10px;
+  padding-top: 10px;
 }
 
 footer a {
