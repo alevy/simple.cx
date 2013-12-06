@@ -60,12 +60,13 @@ folder where you would like to create the project (for example `cd ~/hack`) and
 create a new Simple project called "blog":
 
 ```bash
-$ smpl create blog
+$ smpl create --all blog
 ```
 
 This will create a new subdirectory called "blog" containing your app. The
-directory contains a ready-to-run app, as well as some empty directories that
-are used for common tasks:
+"--all" flag tells `smpl` to include boilerplate code for templates,
+cookie-based sessions and PostgrSQL based models. The directory contains a
+ready-to-run app with the following structure:
 
 | File/Folder    | Purpose                                                    |
 |----------------|------------------------------------------------------------|
@@ -104,7 +105,7 @@ $ smpl server
 This will fire up `wai-handler-devel` on port _3000_, and set the environment
 variable "ENV" to "development". To see your application in action, open a
 browser and navigate to [http://localhost:3000/](http://localhost:3000). You
-should see a blank HTML page with just "Hello World":
+should see the default generated home page:
 
 ![](images/screenshot-hello.png "\"Hello World\" Screenshot")
 
@@ -124,5 +125,7 @@ environment variable, for example, to run the application on port _8080_:
 $ PORT=8080 cabal run
 ```
 
-### Adding a controller
+### Adding a Route
 
+The default generated application isn't very interesting, displaying only a
+boilerplate homepage for every request.
