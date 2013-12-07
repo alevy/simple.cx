@@ -244,3 +244,4 @@ for a particular page by calling `renderLayout` with a specific layout or
 globally by modifying the instance of `HasTemplates` in `Blog.Common`.
 
 </aside>
+
