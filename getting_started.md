@@ -6,11 +6,11 @@ showtoc: true
 This getting started tutorial will get you up and running with a basic web
 application. At the end you will know
 
-1. how install Simple
+1. how install _Simple_
 
-2. how to create a Simple application from scratch
+2. how to create a _Simple_ application from scratch
 
-3. the structure of a Simple application
+3. the structure of a _Simple_ application
 
 4. how to add persistence with PostgreSQL.
 
@@ -32,40 +32,41 @@ good starting guide to Haskell see
 [Learn You a Haskell for Great Good!](http://learnyouahaskell.org)
 and/or [Real World Haskell](http://book.realworldhaskell.org/).
 
-## Creating a new Simple app
+## Creating a new _Simple_ app
 
-### Installing Simple
+### Installing _Simple_
 
 Open up a terminal. Commands prefaced with a dollar sign ($) should be run in
-terminal. Use cabal to instal Simple:
+terminal. Use cabal to instal _Simple_:
 
 ```bash
 $ cabal install simple
 ```
 
-To verify that Simple installed properly run the following command:
+To verify that _Simple_ installed properly run the following command:
 
 ```bash
 $ smpl --help
 ```
 
 which should print out the subcommands and options available for the `smpl`
-utility that comes with Simple.
+utility that comes with _Simple_.
 
 ### Creating the Blog application
 
-The `smpl` utility helps you create a new, blank Simple application from the
+The `smpl` utility helps you create a new, blank _Simple_ application from the
 command-line. To begin creating our application, open a terminal, navigate to a
 folder where you would like to create the project (for example `cd ~/hack`) and
-create a new Simple project called "blog":
+create a new _Simple_ project called "blog":
 
 ```bash
-$ smpl create --all blog
+$ smpl create --templates blog
 ```
 
 This will create a new subdirectory called "blog" containing our app. The
-"--all" flag tells `smpl` to include boilerplate code for templates,
-cookie-based sessions and PostgrSQL based models. The directory contains a
+"--templates" flag tells `smpl` to include boilerplate code for templates.
+We could specify "--all" to get PostgreSQL ORM and cookie-based session
+support, but we won't be using that for this tutorial. The directory contains a
 ready-to-run app with the following structure:
 
 | File/Folder    | Purpose                                                    |
@@ -81,12 +82,12 @@ ready-to-run app with the following structure:
 
 ## Getting up and running
 
-Our application is ready to start working on. Now we'll get a server up and
+Our application is ready for us to get to work. Now we'll get a server up and
 running and start adding functionality to our application.
 
 ### Starting the server
 
-Simple apps are built on top of the WAI package, and can be run with any WAI
+_Simple_ apps are built on top of the WAI package, and can be run with any WAI
 compatible server, like [warp](http://hackage.haskell.org/package/warp). The
 `smpl` utility helps run applications in development mode. First,
 install the package `wai-handler-devel`:
@@ -95,7 +96,7 @@ install the package `wai-handler-devel`:
 $ cabal install wai-handler-devel
 ```
 
-Now we can run the Simple development server. From our application directory,
+Now we can run the _Simple_ development server. From our application directory,
 run:
 
 ```bash
@@ -131,31 +132,56 @@ $ PORT=8080 cabal run
 ### Adding a Controller
 
 The default generated application isn't very interesting, displaying only a
-boilerplate homepage. Since we don't have any content for our
-blog yet, let's start by displaying a form for creating posts. Create a new
-module `Blog.Controllers.Posts` in `Blog/Controllers/Posts.hs`:
+boilerplate homepage. We'll start by adding some content. For simplicity we can
+store blog posts in the filesystem. Let's create some dummy data:
+
+```
+$ mkdir data
+$ cat > data/00001
+The Title of Your First Post on a Single Line
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Etiam vitae interdum sapien. In congue... 
+
+$ cat > data/00002
+The Title of Your Second Post
+Aliquam tempor varius justo vitae bibendum! Duis vitae rutrum
+neque. Sed ut sed...
+```
+
+We'll use the filename to order posts, the first line of the file for post
+title and the rest for the post body. Now that we have some data to play with,
+let's list and display our posts. Modify "Application.hs":
 
 ```haskell
 {-# LANGUAGE OverloadedStrings #-}
-module Blog.Controllers.Posts where
+module Application where
 
+import Control.Monad
+import Control.Monad.IO.Class
 import Blog.Common
-import Web.Frank
+import Data.Aeson
+import System.Directory
+import System.FilePath
+import System.IO
 import Web.Simple
+import Web.Simple.Templates
 
-postsController :: Controller AppSettings ()
-postsController = do
-  get "new" $ do
-    respond $ okHtml "Placeholder for new posts form"
+app :: (Application -> IO ()) -> IO ()
+app runner = do
+  settings <- newAppSettings
+  runner $ controllerApp settings $ do
+    -- Respond to the root route
+    routeTop $ do
+      posts <- liftIO $ do
+        postFiles <- filter (\(c:_) -> c /= '.') `fmap`
+          getDirectoryContents "data"
+        forM postFiles $ \postFile -> do
+          postHandle <- openFile ("data" </> postFile) ReadMode
+          title <- hGetLine postHandle
+          hClose postHandle
+          return $ object ["id" .= postFile, "title" .= title]
+      render "index.html" $ object ["posts" .= posts]
 ```
-
-The above code responds to a GET request for the sub-path `/new/` with the
-plaintext "Placeholder for new posts form". `okHtml` simply wraps this text in
-an HTTP response with status code _200 OK_ and content type "text/html".
-
-We imported `Blog.Common` to get access to `AppSettings`. `Web.Frank` gives us a
-[Sinatra](http://sinatrarb.com)-like DSL for routing. Finally `Web.Simple`
-exposes `Controller`, `respond` and `okHtml`
 
 <aside>
 
@@ -165,6 +191,62 @@ application-specific value (in our case, of type `AppSettings`). A `Controller`
 falls-through unless it explicitly `respond`s to a request.
 
 </aside>
+
+The above code responds to a GET request for the root route ("/"), rendering
+the template "views/index.html" and passing it an
+[aeson](http://hackage.haskell.org/packages/aeson) value containing a list of
+post objects. Each post contains an _id_ and _title_. `routeTop` ensures that
+the route is only invoked if there is no path remaining to consume. The rest of
+the code simply reads the first line (the title) of each file in the "data"
+directory.
+
+<aside>
+
+Most of the imports we added were for reading the posts from the filesystem
+(`System.Directory`, `System.FilePath` and System.IO) or for basic Monad
+manipulations (`Control.Monad` and `Control.Monad.IO.Class`).
+
+</aside>
+
+Let's now modify "views/index.html" to make use of the posts:
+
+```html
+$if(null(posts))$
+No posts.
+$else$
+<ul>
+$for(post in posts)$
+<li><a href="/$post.id$">$post.title$</a></li>
+$endfor$
+</ul>
+$endif$
+```
+
+_Simple_ templates are embedded templates -- meaning they are embedded inside
+HTML, or whichever relevant output format. Template directives (like control
+statments and variable expansions) are surrounded by dollar signs ($). Our
+template lists the post titles and links to the post itself at "/:post.id".
+
+Let's add the route for displaying individual posts:
+
+```haskell
+    -- Repond to "/:post_id"
+    routeVar "post_id" $ routeTop $ do
+      postId <- queryParam' "id"
+      (title, body) <- liftIO $ do
+        postHandle <- openFile ("data" </> postId) ReadMode
+        liftM2 (,) (hGetLine postHandle) (hGetContents postHandle)
+      render "show.html" $
+        object ["title" .= title, "body" .= body]
+```
+
+The above code responds to a GET request for the sub-path `/new/` with the
+plaintext "Placeholder for new posts form". `okHtml` simply wraps this text in
+an HTTP response with status code _200 OK_ and content type "text/html".
+
+We imported `Blog.Common` to get access to `AppSettings`. `Web.Frank` gives us a
+[Sinatra](http://sinatrarb.com)-like DSL for routing. Finally `Web.Simple`
+exposes `Controller`, `respond` and `okHtml`
 
 We must also modify `Application.hs` to actually route to our new controller:
 
