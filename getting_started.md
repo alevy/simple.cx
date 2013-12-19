@@ -80,12 +80,10 @@ ready-to-run app with the following structure:
 | blog.cabal     | Used by cabal to resolve package dependencies and compile the app|
 | Main.hs        | Contains the main function used to start the application   |
 
-## Getting up and running
+## Starting the server
 
 Our application is ready for us to get to work. Now we'll get a server up and
 running and start adding functionality to our application.
-
-### Starting the server
 
 _Simple_ apps are built on top of the WAI package, and can be run with any WAI
 compatible server, like [warp](http://hackage.haskell.org/package/warp). The
@@ -129,7 +127,7 @@ $ PORT=8080 cabal run
 ```
 </aside>
 
-### Adding a Controller
+## Writing Controllers
 
 The default generated application isn't very interesting, displaying only a
 boilerplate homepage. We'll start by adding some content. For simplicity we can
@@ -147,6 +145,8 @@ The Title of Your Second Post
 Aliquam tempor varius justo vitae bibendum! Duis vitae rutrum
 neque. Sed ut sed...
 ```
+
+### List posts
 
 We'll use the filename to order posts, the first line of the file for post
 title and the rest for the post body. Now that we have some data to play with,
@@ -200,6 +200,10 @@ the route is only invoked if there is no path remaining to consume. The rest of
 the code simply reads the first line (the title) of each file in the "data"
 directory.
 
+If you are using cabal to build your application, you also need to add the
+packages `aeson`, `directory`, `filepath` and `transformers` as dependencies
+(they should already be installed since _Simple_ depends on them).
+
 <aside>
 
 Most of the imports we added were for reading the posts from the filesystem
@@ -227,93 +231,7 @@ HTML, or whichever relevant output format. Template directives (like control
 statments and variable expansions) are surrounded by dollar signs ($). Our
 template lists the post titles and links to the post itself at "/:post.id".
 
-Let's add the route for displaying individual posts:
-
-```haskell
-    -- Repond to "/:post_id"
-    routeVar "post_id" $ routeTop $ do
-      postId <- queryParam' "id"
-      (title, body) <- liftIO $ do
-        postHandle <- openFile ("data" </> postId) ReadMode
-        liftM2 (,) (hGetLine postHandle) (hGetContents postHandle)
-      render "show.html" $
-        object ["title" .= title, "body" .= body]
-```
-
-The above code responds to a GET request for the sub-path `/new/` with the
-plaintext "Placeholder for new posts form". `okHtml` simply wraps this text in
-an HTTP response with status code _200 OK_ and content type "text/html".
-
-We imported `Blog.Common` to get access to `AppSettings`. `Web.Frank` gives us a
-[Sinatra](http://sinatrarb.com)-like DSL for routing. Finally `Web.Simple`
-exposes `Controller`, `respond` and `okHtml`
-
-We must also modify `Application.hs` to actually route to our new controller:
-
-```haskell
-...other imports...
-import Blog.Controllers.Posts
-
-app :: (Application -> IO ()) -> IO ()
-app runner = do
-  settings <- newSettings
-
-  runner $ controllerApp settings $ do
-    routeTop $ render "index.html" ()
-    routeName "posts" postsController
-```
-
-We've simply imported our posts controller module and added a line inside the
-routing block that routes all requests witha path beginning with "/posts/" to
-the `postsController`. Now, pointing your browser
-[http://localhost:3000/posts/new](http://localhost:3000/posts/new) should
-show our placeholder for the form.
-
-Of course, we actually want to display a form, not just some random text. We
-can add a form easily using `Web.Templates`. Create a new template in the file
-`views/posts/new.html`:
-
-```html
-<h2>New Post</h2>
-<form action="/posts/" method="POST">
-  <p>
-    <label for="title">Title</label>
-    <input type="text" name="title" id="title"/>
-  </p>
-  <p>
-    <label for="body">Body</label>
-    <textarea name="body" id="body"></textarea>
-  </p>
-  <p><input type="submit" value="Create"/></p>
-</form>
-```
-Next, we'll modify the posts controller to render this template as opposed to
-the placeholder text. In `Blog/Controllers/Posts.hs`, add the import
-`Web.Simple.Templates` and change the line that beings with `respond` to
-`render "posts/index.html" ()`, to get:
-
-```haskell
-{-# LANGUAGE OverloadedStrings #-}
-module Blog.Controllers.Posts where
-
-import Blog.Common
-import Web.Frank
-import Web.Simple
-import Web.Simple.Templates
-
-postsController :: Controller AppSettings ()
-postsController = do
-  get "new" $ do
-    render "posts/new.html" ()
-```
-
-`render` finds the specified template under the _views_ directory, renders the
-template (passing in the third parameter as an argument) and calls `respond`
-with the result. Now, navigating to the same page
-[http://localhost:3000/posts/new](http://localhost:3000/posts/new) should
-display:
-
-![](images/screenshot-new-post.png "New Post Screenshot")
+![](images/screenshot-index.png "Posts index Screenshot")
 
 <aside>
 
@@ -326,4 +244,30 @@ for a particular page by calling `renderLayout` with a specific layout or
 globally by modifying the instance of `HasTemplates` in `Blog.Common`.
 
 </aside>
+
+### Show post
+
+If we click on any of the links now, we'll get a 404 (not found) page. That's
+because we still need to add the route for displaying individual posts:
+
+```haskell
+    -- Repond to "/:post_id"
+    routeVar "post_id" $ routeTop $ do
+      postId <- queryParam' "post_id"
+      let postFile = "data" </> (takeFileName postId)
+      (title, body) <- liftIO $ do
+        postHandle <- openFile postFile ReadMode
+        liftM2 (,) (hGetLine postHandle) (hGetContents postHandle)
+      render "show.html" $
+        object ["title" .= title, "body" .= body]
+```
+
+and add a view template in "views/show.html":
+
+```html
+<h2>$title$</h2>
+<p>
+$body$
+</p>
+```
 
