@@ -11,5 +11,5 @@ clean:
 	rm -f simple.cx.tar.gz
 
 dist: all
-	tar cvzf simple.cx.tar.gz -C out .
+	tar czf simple.cx.tar.gz -C out .
 
