@@ -127,7 +127,7 @@ $ PORT=8080 cabal run
 ```
 </aside>
 
-## Writing Controllers
+## Displaying Content
 
 The default generated application isn't very interesting, displaying only a
 boilerplate homepage. We'll start by adding some content. For simplicity we can
@@ -251,16 +251,26 @@ If we click on any of the links now, we'll get a 404 (not found) page. That's
 because we still need to add the route for displaying individual posts:
 
 ```haskell
-    -- Repond to "/:post_id"
-    routeVar "post_id" $ routeTop $ do
-      postId <- queryParam' "post_id"
-      let postFile = "data" </> (takeFileName postId)
-      (title, body) <- liftIO $ do
-        postHandle <- openFile postFile ReadMode
-        liftM2 (,) (hGetLine postHandle) (hGetContents postHandle)
-      render "show.html" $
-        object ["title" .= title, "body" .= body]
+-- Repond to "/:post_id"
+routeVar "post_id" $ routeTop $ do
+  postId <- queryParam' "post_id"
+  let postFile = "data" </> (takeFileName postId)
+  (title, body) <- liftIO $ do
+    postHandle <- openFile postFile ReadMode
+    liftM2 (,) (hGetLine postHandle) (hGetContents postHandle)
+  render "show.html" $
+    object ["title" .= title, "body" .= body]
 ```
+
+<aside>
+
+`routeVar` consumes the next directory in the request path, but instead of
+matching a particular string (like `routeName`), it sticks the directory name
+in the given query parameters. So, for example, `routeVar "post_id"` will match
+paths will at least one directory left, and make the name of the directory
+available in the `post_id` query parameter from within the controller.
+
+</aside>
 
 and add a view template in "views/show.html":
 
@@ -269,5 +279,46 @@ and add a view template in "views/show.html":
 <p>
 $body$
 </p>
+```
+
+Now, if we click on a link from the main page, our app will display the post
+body:
+
+![](images/screenshot-post.png "\"Hello World\" Screenshot")
+
+We nearly have a complete (albiet minimal) blog application. We're just missing
+a way to generate the content in the first place...
+
+# Creating content
+
+### New post form
+
+Our first step towards being able to author new posts is to display an HTML
+form. This is fairly straight forward since it involves no dynamic content.
+We'll add the route "/new" which will simply render the form:
+
+```haskell
+-- Render new post form
+routeName "new" $ routeTop $ do
+  render "new.html" ()
+```
+
+It's imperitive that this route appears before the route for displaying posts.
+That's because routes are evaluated in order, and `routeVar "post_id"` would
+match "/new", which we don't want.
+
+Finally, we need to add a template in "views/new.html":
+
+```html
+<form action="/" method="POST">
+  <p>
+    <label for="title">Title</label>
+    <input type="text" name="title" id="title"/>
+  </p>
+  <p>
+    <textarea name="body"></textarea>
+  </p>
+  <p><input type="submit" value="Create"/>
+</form>
 ```
 
