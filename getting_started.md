@@ -160,6 +160,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Blog.Common
 import Data.Aeson
+import Data.List
 import System.Directory
 import System.FilePath
 import System.IO
@@ -173,7 +174,7 @@ app runner = do
     -- Respond to the root route
     routeTop $ do
       posts <- liftIO $ do
-        postFiles <- filter (\(c:_) -> c /= '.') `fmap`
+        postFiles <- sort `fmap` filter (\(c:_) -> c /= '.') `fmap`
           getDirectoryContents "data"
         forM postFiles $ \postFile -> do
           postHandle <- openFile ("data" </> postFile) ReadMode
@@ -208,7 +209,9 @@ packages `aeson`, `directory`, `filepath` and `transformers` as dependencies
 
 Most of the imports we added were for reading the posts from the filesystem
 (`System.Directory`, `System.FilePath` and System.IO) or for basic Monad
-manipulations (`Control.Monad` and `Control.Monad.IO.Class`).
+manipulations (`Control.Monad` and `Control.Monad.IO.Class`). `Data.Aeson` is
+needed to construct a value to pass to the template and `Data.List` is used to
+manipulate the list of files returned from the "data" directory.
 
 </aside>
 
@@ -284,7 +287,7 @@ $body$
 Now, if we click on a link from the main page, our app will display the post
 body:
 
-![](images/screenshot-post.png "\"Hello World\" Screenshot")
+![](images/screenshot-post.png "Show Post Screenshot")
 
 We nearly have a complete (albiet minimal) blog application. We're just missing
 a way to generate the content in the first place...
@@ -321,4 +324,36 @@ Finally, we need to add a template in "views/new.html":
   <p><input type="submit" value="Create"/>
 </form>
 ```
+![](images/screenshot-new.png "New Post Screenshot")
 
+### Parsing the form
+
+```haskell
+...
+import qualified Data.ByteString.Char8 as S8
+...
+
+-- Create form
+routeTop $ routeMethod POST $ do
+  (params, _) <- parseForm
+  let notNull = not . S8.null
+  let mpost = do
+        title <- notNull `mfilter` lookup "title" params
+        body <- notNull `mfilter` lookup "body" params
+        return (title, body)
+  case mpost of
+    Nothing -> redirectBack
+    Just (title, body) -> liftIO $ do
+      files <- filter (\(c:_) -> c /= '.') `fmap`
+        getDirectoryContents "data"
+      let lastFileNum = show $ length files + 1
+      let fileName =
+            take (5 - length lastFileNum)
+              [z | _ <- [0..], let z = '0'] ++
+            lastFileNum
+      h <- openFile ("data" </> fileName) WriteMode
+      S8.hPutStrLn h title
+      S8.hPutStr h body
+      hClose h
+  respond $ redirectTo "/"
+```
