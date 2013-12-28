@@ -496,3 +496,8 @@ app runner = do
 
 ## Next Steps
 
+  * [Building Models with PostgreSQL](postgresql-orm.html)
+  * [_Simple_ template system in depth](templates.html)
+  * [Cookie-based session management](sessions.html)
+  * [In depth reference](api.html)
+
