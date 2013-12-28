@@ -161,6 +161,7 @@ import Control.Monad.IO.Class
 import Blog.Common
 import Data.Aeson
 import Data.List
+import Network.HTTP.Types
 import System.Directory
 import System.FilePath
 import System.IO
@@ -171,17 +172,19 @@ app :: (Application -> IO ()) -> IO ()
 app runner = do
   settings <- newAppSettings
   runner $ controllerApp settings $ do
-    -- Respond to the root route
-    routeTop $ do
-      posts <- liftIO $ do
-        postFiles <- sort `fmap` filter (\(c:_) -> c /= '.') `fmap`
-          getDirectoryContents "data"
-        forM postFiles $ \postFile -> do
-          postHandle <- openFile ("data" </> postFile) ReadMode
-          title <- hGetLine postHandle
-          hClose postHandle
-          return $ object ["id" .= postFile, "title" .= title]
-      render "index.html" $ object ["posts" .= posts]
+    routeMethod GET $ do
+      -- Respond to the root route
+      routeTop $ do
+        posts <- liftIO $ do
+          dataDir <- getDirectoryContents "data"
+          let postFiles = sort $
+                filter (not . isPrefixOf ".") dataDir
+          forM postFiles $ \postFile -> do
+            withFile ("data" </> postFile) ReadMode $ \h -> do
+              title <- hGetLine postHandle
+              return $ object ["id" .= postFile
+                              , "title" .= title]
+        render "index.html" $ object ["posts" .= posts]
 ```
 
 <aside>
@@ -202,16 +205,18 @@ the code simply reads the first line (the title) of each file in the "data"
 directory.
 
 If you are using cabal to build your application, you also need to add the
-packages `aeson`, `directory`, `filepath` and `transformers` as dependencies
-(they should already be installed since _Simple_ depends on them).
+packages `aeson`, `directory`, `filepath`, `http-types` and `transformers` as
+dependencies (they should already be installed since _Simple_ depends on them).
 
 <aside>
 
 Most of the imports we added were for reading the posts from the filesystem
 (`System.Directory`, `System.FilePath` and System.IO) or for basic Monad
 manipulations (`Control.Monad` and `Control.Monad.IO.Class`). `Data.Aeson` is
-needed to construct a value to pass to the template and `Data.List` is used to
-manipulate the list of files returned from the "data" directory.
+needed to construct a value to pass to the template. `Data.List` is used to
+manipulate the list of files returned from the "data" directory. Finally,
+`Network.HTTP.Types` imports `GET` (as well as `POST`, `PUT` etc) used in
+`routeMethod`.
 
 </aside>
 
@@ -258,11 +263,12 @@ because we still need to add the route for displaying individual posts:
 routeVar "post_id" $ routeTop $ do
   postId <- queryParam' "post_id"
   let postFile = "data" </> (takeFileName postId)
-  (title, body) <- liftIO $ do
-    postHandle <- openFile postFile ReadMode
-    liftM2 (,) (hGetLine postHandle) (hGetContents postHandle)
-  render "show.html" $
-    object ["title" .= title, "body" .= body]
+  post <- liftIO $ do
+    h <- openFile postFile ReadMode
+    title <- hGetLine h
+    body <- hGetContents h
+    return $ object ["title" .= title, "body" .= body]
+  render "show.html" post
 ```
 
 <aside>
@@ -292,7 +298,7 @@ body:
 We nearly have a complete (albiet minimal) blog application. We're just missing
 a way to generate the content in the first place...
 
-# Creating content
+## Creating content
 
 ### New post form
 
@@ -328,13 +334,25 @@ Finally, we need to add a template in "views/new.html":
 
 ### Parsing the form
 
+Submitting the form above will perform a "POST" request to the root path with
+a URL-encoded body containing the contents of the form. In order to store the
+new post, we need to parse the form and ensure that the data is valid (i.e. the
+title and body fields are non-empty).
+
+The monadic `parseFrom` function parses a form into a list of parameters (each
+a pair of strict `ByteString`s for the key and value) and a list of `FileInfo`s
+(`FileInfo` represents an uploaded file, but we won't go into that now as it's
+not relevant for our example).
+
+`parseForm` lets us save new posts relatively easily:
+
 ```haskell
 ...
 import qualified Data.ByteString.Char8 as S8
 ...
 
 -- Create form
-routeTop $ routeMethod POST $ do
+routeMethod POST $ routeTop $ do
   (params, _) <- parseForm
   let notNull = not . S8.null
   let mpost = do
@@ -351,9 +369,130 @@ routeTop $ routeMethod POST $ do
             take (5 - length lastFileNum)
               [z | _ <- [0..], let z = '0'] ++
             lastFileNum
-      h <- openFile ("data" </> fileName) WriteMode
-      S8.hPutStrLn h title
-      S8.hPutStr h body
-      hClose h
+      withFile ("data" </> fileName) WriteMode $ \h ->
+        S8.hPutStrLn h title
+        S8.hPutStr h body
   respond $ redirectTo "/"
 ```
+
+Once we've extracted the parameters from the request body, we lookup the "title"
+and "body" fields (note that these just correspond to the "name" attribute we
+gave the inputs in our HTML form) and ensure they are not empty (whith
+`notNull` and `mfilter). If this fails (i.e. if "title" or "body" are either
+not present or empty), we redirect to the referer (the new post form). In a
+real application, we'd probabaly want to give the user some hint as to what
+went wrong. If the form is complete, we store the post and redirect to the post
+listings.
+
+<aside>
+Note that we've imported `Data.ByteString.Char8`. To build with cabal, you'll
+need to add the `bytestring` package as a dependency in `blog.cabal`.
+</aside>
+
+We're basically done! Our blog app, while very simple, is totally functional!
+
+## Bonus! Routing DSLs
+
+The `route*` combinators are very expressive and are, therefore, great for
+customizing exactly how to route a request. However, in the common case, where
+an application follows a simple pattern, they can get a bit cumbersome to use.
+_Simple_ ships with two DSLs on top of the `route*` combinators that make
+common routing tasks easy. Let's use one of these DSLs, "Frank", to rewrite out
+blog application more concisely.
+
+"Frank" exposes an interface based on the [Sinatra](http://sinatrarb.com)
+framework for Ruby. For example, the route:
+
+```haskell
+get "/:post_id" $ do
+  ...
+```
+
+will match GET requests which have exactly one uncomsumed directory in the path
+and use its contents for the "post_id" query parameters. The route is
+equivilant to (and in fact implemented as):
+
+```haskell
+routeMethod GET $ routePattern "/:post_id" $ routeTop
+```
+
+There are similar methods for `post`, `put` and `delete`.
+
+Once we import `Web.Frank`, we can rewrite our application much more cleanly
+using this interface. The full listing is:
+
+```haskell
+{-# LANGUAGE OverloadedStrings #-}
+module Application where
+
+import Control.Monad
+import Control.Monad.IO.Class
+import Blog.Common
+import Data.Aeson
+import qualified Data.ByteString.Char8 as S8
+import Data.List
+import Network.HTTP.Types
+import System.Directory
+import System.FilePath
+import System.IO
+import Web.Simple
+import Web.Simple.Templates
+
+app :: (Application -> IO ()) -> IO ()
+app runner = do
+  settings <- newAppSettings
+
+  runner $ controllerApp settings $ do
+    get "/" $ do
+      posts <- liftIO $ do
+        dataDir <- getDirectoryContents "data"
+        let postFiles = sort $
+              filter (not . isPrefixOf ".") dataDir
+        forM postFiles $ \postFile -> do
+          withFile ("data" </> postFile) ReadMode $ \h -> do
+            title <- hGetLine h
+            return $ object ["id" .= postFile
+                            , "title" .= title]
+      render "index.html" $ object ["posts" .= posts]
+
+    -- Respond to "/new"
+    get "/new" $ do
+      render "new.html" ()
+
+    -- Repond to "/:post_id"
+    get "/:post_id" $ routeTop $ do
+      postId <- queryParam' "post_id"
+      let postFile = "data" </> (takeFileName postId)
+      post <- liftIO $ do
+        h <- openFile postFile ReadMode
+        title <- hGetLine h
+        body <- hGetContents h
+        return $ object ["title" .= title, "body" .= body]
+      render "show.html" post
+
+    -- Create form
+    post "/" $ do
+      (params, _) <- parseForm
+      let notNull = not . S8.null
+      let mpost = do
+            title <- notNull `mfilter` lookup "title" params
+            body <- notNull `mfilter` lookup "body" params
+            return (title, body)
+      case mpost of
+        Nothing -> redirectBack
+        Just (title, body) -> liftIO $ do
+          files <- filter (\(c:_) -> c /= '.') `fmap`
+            getDirectoryContents "data"
+          let lastFileNum = show $ length files + 1
+          let fileName =
+                take (5 - length lastFileNum)
+                  [z | _ <- [0..], let z = '0'] ++
+                lastFileNum
+          withFile ("data" </> fileName) WriteMode $ \h -> do
+            S8.hPutStrLn h title
+            S8.hPutStr h body
+      respond $ redirectTo "/"
+```
+
+## Next Steps
+
