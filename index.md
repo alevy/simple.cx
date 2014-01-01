@@ -27,6 +27,6 @@ You can now navigate to your web app at
 [http://localhost:3000](http://localhost:3000)!
 
 You can expand your app with a persistent datastore, session data, templates
-and more. See [Getting Started](getting_started.html) for a more in depth
-tutorial.
+and more. Build a fully function blog in the
+[Getting Started Tutorial](tutorial.html)!
 
