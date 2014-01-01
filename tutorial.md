@@ -23,13 +23,13 @@ best way to get GHC and cabal setup is by installing the
 have PosgreSQL in their package repositories (e.g.
 `apt-get install postgresql`, `pacman -S postgresql`).
 Mac OS X comes with PostgreSQL, however, some of the utilities that this guide
-relies on (like `pg_ctl`) are not shipped by default. However, you installing
-from Homebrew will install the approriate utilities.
+relies on (like `pg_ctl`) are not shipped by default. However, installing
+PostgreSQL from Homebrew will also install the approriate utilities.
 
 The guide also assumes you have a basic understand of Haskell programming, web
 programming and preferably have built a few web applications in the past. For a
 good starting guide to Haskell see
-[Learn You a Haskell for Great Good!](http://learnyouahaskell.org)
+[Learn You a Haskell for Great Good!](http://learnyouahaskell.com)
 and/or [Real World Haskell](http://book.realworldhaskell.org/).
 
 ## Creating a new _Simple_ app
@@ -55,9 +55,9 @@ utility that comes with _Simple_.
 ### Creating the Blog application
 
 The `smpl` utility helps you create a new, blank _Simple_ application from the
-command-line. To begin creating our application, open a terminal, navigate to a
-folder where you would like to create the project (for example `cd ~/hack`) and
-create a new _Simple_ project called "blog":
+command-line. To create our application, open a terminal, navigate to a folder
+where you would like to create the project (for example `cd ~/hack`) and create
+a new _Simple_ project called "blog":
 
 ```bash
 $ smpl create --templates blog
@@ -65,9 +65,7 @@ $ smpl create --templates blog
 
 This will create a new subdirectory called "blog" containing our app. The
 "--templates" flag tells `smpl` to include boilerplate code for templates.
-We could specify "--all" to get PostgreSQL ORM and cookie-based session
-support, but we won't be using that for this tutorial. The directory contains a
-ready-to-run app with the following structure:
+The directory contains a ready-to-run app with the following structure:
 
 | File/Folder    | Purpose                                                    |
 |----------------|------------------------------------------------------------|
@@ -85,19 +83,29 @@ ready-to-run app with the following structure:
 Our application is ready for us to get to work. Now we'll get a server up and
 running and start adding functionality to our application.
 
-_Simple_ apps are built on top of the WAI package, and can be run with any WAI
-compatible server, like [warp](http://hackage.haskell.org/package/warp). The
+_Simple_ apps can be run with any WAI compatible server, like
+[warp](http://hackage.haskell.org/package/warp). The generated `Main.hs` file
+does exactly this. The following commands will start a server on port 3000.
+
+```bash
+$ cabal install --only-dependencies
+$ cabal run
+```
+
+To see the application in action, open a browser and navigate to
+[http://localhost:3000/](http://localhost:300). You should see the default
+generated home page:
+
+![](images/screenshot-hello.png "\"Hello World\" Screenshot")
+
+
+<aside>
+
 `smpl` utility helps run applications in development mode. First,
-install the package `wai-handler-devel`:
+ensure the package `wai-handler-devel` is installed, then run `smpl server`:
 
 ```bash
 $ cabal install wai-handler-devel
-```
-
-Now we can run the _Simple_ development server. From our application directory,
-run:
-
-```bash
 $ smpl server
 ```
 
@@ -106,25 +114,6 @@ variable "ENV" to "development". To see the application in action, open a
 browser and navigate to [http://localhost:3000/](http://localhost:3000). You
 should see the default generated home page:
 
-![](images/screenshot-hello.png "\"Hello World\" Screenshot")
-
-<aside>
-
-You can of course compile and run applications without the `smpl` utility
-(in fact, this is probably how you will deploy apps, as wai-handler-devel
-is not suitable for production).
-
-```bash
-$ cabal run
-```
-
-This will compile and run `Main.hs`, which by default runs the application
-using warp on port _3000_. You can specify a different port by setting the "PORT"
-environment variable, for example, to run the application on port _8080_:
-
-```bash
-$ PORT=8080 cabal run
-```
 </aside>
 
 ## Displaying Content
@@ -150,75 +139,100 @@ neque. Sed ut sed...
 
 We'll use the filename to order posts, the first line of the file for post
 title and the rest for the post body. Now that we have some data to play with,
-let's list and display our posts. Modify "Application.hs":
+let's list and display our posts.
+
+For this simple tutorial, we'll write all of our application logic in
+"Application.hs". First, add the following imports:
 
 ```haskell
-{-# LANGUAGE OverloadedStrings #-}
-module Application where
-
 import Control.Monad
 import Control.Monad.IO.Class
-import Blog.Common
 import Data.Aeson
 import Data.List
 import Network.HTTP.Types
 import System.Directory
 import System.FilePath
 import System.IO
-import Web.Simple
-import Web.Simple.Templates
+```
+<aside>
 
-app :: (Application -> IO ()) -> IO ()
+Most of these imports are for reading the posts from the filesystem
+(`System.Directory`, `System.FilePath` and System.IO) or for basic Monad
+manipulations (`Control.Monad` and `Control.Monad.IO.Class`). `Data.Aeson`
+lets us construct values to pass to templates. `Data.List` is used to
+manipulate the list of files returned from the "data" directory. Finally,
+we need `Network.HTTP.Types` for HTTP method keywords to use in our routing.
+
+</aside>
+
+Next, let's modify the actual application in the `app` function. The first line
+in the function sets up the app _settings_ -- which is defined in
+`Blog.Common`. The rest of the function runs the HTTP server (`runner`) using
+the application defined in the block:
+
+```haskell
 app runner = do
   settings <- newAppSettings
+
   runner $ controllerApp settings $ do
-    routeMethod GET $ do
-      -- Respond to the root route
-      routeTop $ do
-        posts <- liftIO $ do
-          dataDir <- getDirectoryContents "data"
-          let postFiles = sort $
-                filter (not . isPrefixOf ".") dataDir
-          forM postFiles $ \postFile -> do
-            withFile ("data" </> postFile) ReadMode $ \h -> do
-              title <- hGetLine postHandle
-              return $ object ["id" .= postFile
-                              , "title" .= title]
-        render "index.html" $ object ["posts" .= posts]
+    routeTop $ render "index.html" ()
 ```
 
-<aside>
+Replace `routeTop $ render "index.html ()"` with logic to read posts from the
+filesystem and and render them in the "index.html" template:
 
-`Controller` is the main type used in _Simple_. It contains the request
-(accessible through the monadic `request` function), as well as an
-application-specific value (in our case, of type `AppSettings`). A `Controller`
-falls-through unless it explicitly `respond`s to a request.
-
-</aside>
+```haskell
+routeMethod GET $ do
+  -- Respond to the root route
+  routeTop $ do
+    posts <- liftIO $ do
+      dataDir <- getDirectoryContents "data"
+      let postFiles = sort $
+            filter (not . isPrefixOf ".") dataDir
+      forM postFiles $ \postFile -> do
+        withFile ("data" </> postFile) ReadMode $ \h -> do
+          title <- hGetLine postHandle
+          return $ object ["id" .= postFile
+                          , "title" .= title]
+    render "index.html" $ object ["posts" .= posts]
+```
 
 The above code responds to a GET request for the root route ("/"), rendering
-the template "views/index.html" and passing it an
-[aeson](http://hackage.haskell.org/packages/aeson) value containing a list of
-post objects. Each post contains an _id_ and _title_. `routeTop` ensures that
-the route is only invoked if there is no path remaining to consume. The rest of
-the code simply reads the first line (the title) of each file in the "data"
-directory.
-
-If you are using cabal to build your application, you also need to add the
-packages `aeson`, `directory`, `filepath`, `http-types` and `transformers` as
-dependencies (they should already be installed since _Simple_ depends on them).
+the template "views/index.html" and passing it an JSON value
+(a [aeson](http://hackage.haskell.org/packages/aeson) `Value`) containing a
+list of post objects. Each post contains an _id_ and _title_. `routeTop`
+ensures that the route is only invoked if there is no path remaining to
+consume. The rest of the code simply reads the first line (the title) of each
+file in the "data" directory.
 
 <aside>
 
-Most of the imports we added were for reading the posts from the filesystem
-(`System.Directory`, `System.FilePath` and System.IO) or for basic Monad
-manipulations (`Control.Monad` and `Control.Monad.IO.Class`). `Data.Aeson` is
-needed to construct a value to pass to the template. `Data.List` is used to
-manipulate the list of files returned from the "data" directory. Finally,
-`Network.HTTP.Types` imports `GET` (as well as `POST`, `PUT` etc) used in
-`routeMethod`.
+Our code is running in the `Controller` monad, which is the main type used in
+_Simple_. It contains the request (accessible through the monadic `request`
+function), as well as an application-specific value (in our case, of type
+`AppSettings`). A `Controller` falls-through unless it explicitly `respond`s to
+a request. `Controller` is an instance of `MonadIO`, so to perform IO actions
+(like reading from the filesystem), simply wrap them in `liftIO`
 
 </aside>
+
+We also need to add the packages `aeson`, `directory`, `filepath`, `http-types`
+and `transformers` as dependencies in `blog.cabal` (they should already be installed since
+_Simple_ depends on them anyway):
+
+```haskell
+build-depends:
+  base
+  , aeson
+  , directory
+  , filepath
+  , http-types
+  , transformers
+  , simple >= 0.7.0
+  , wai
+  , wai-extra
+  , warp
+```
 
 Let's now modify "views/index.html" to make use of the posts:
 
@@ -238,13 +252,15 @@ _Simple_ templates are embedded templates -- meaning they are embedded inside
 HTML, or whichever relevant output format. Template directives (like control
 statments and variable expansions) are surrounded by dollar signs ($). Our
 template lists the post titles and links to the post itself at "/:post.id".
+For a comprehensive overview of the templating language, see the
+[Haddock documentation](http://hackage.haskell.org/package/simple-templates-0.7.0/docs/Web-Simple-Templates-Language.html#g:1).
 
 ![](images/screenshot-index.png "Posts index Screenshot")
 
 <aside>
 
 Notice that we didn't specify any of the page style, main heading or any
-boilerplate HTML for that matter, yet the generate page still displays it.
+boilerplate HTML for that matter, yet the generates page still displays it.
 That's because `Web.Simple.Templates` renders all templates within
 the layout in `layouts/main.html`. This behavior can be customized
 for a particular page by calling `renderLayout` with a specific layout or
@@ -256,7 +272,9 @@ globally by modifying the instance of `HasTemplates` in `Blog.Common`.
 ### Show post
 
 If we click on any of the links now, we'll get a 404 (not found) page. That's
-because we still need to add the route for displaying individual posts:
+because we still need to add the route for displaying individual posts. Let's
+another route in "Application.hs" (make sure it's as indented as the main
+route - two indentations):
 
 ```haskell
 -- Repond to "/:post_id"
