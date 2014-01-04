@@ -1,9 +1,9 @@
-PAGES := $(shell ls *.md)
-PAGES_HTML := $(PAGES:%.md=out/%.html)
+PAGES := $(shell ls pages/*.md)
+PAGES_HTML := $(PAGES:pages/%.md=out/%.html)
 
 all: $(PAGES_HTML)
 
-out/%.html: %.md template.html.tmpl
+out/%.html: pages/%.md template.html.tmpl
 	pandoc -S --toc --toc-depth=3 --template=template.html.tmpl $< > $@
 
 clean:

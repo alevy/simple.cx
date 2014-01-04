@@ -20,7 +20,8 @@ h1, h2, h3 h4 {
 }
 
 #wrapper {
-  min-height: 93%;
+  min-height: 100%;
+  margin: 0 auto -3em
 }
 
 .content {
@@ -216,6 +217,7 @@ pre code {
   box-shadow: none;
   white-space: inherit;
   background-color: inherit;
+  padding: 0px;
 }
 
 .sourceCode .kw { color: #268BD2; }
@@ -234,9 +236,19 @@ footer {
   width: 100%;
   background-color: #333;
   color: white;
-  padding-top: 10px;
+  line-height: 3em;
+}
+
+footer > div {
+  margin: 0 auto;
+  max-width: 920px;
+}
+
+footer, .push {
+  height: 3em;
 }
 
 footer a {
   color: #fff;
 }
+

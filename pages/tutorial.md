@@ -514,6 +514,7 @@ app runner = do
 
 ## Next Steps
 
+  * [The _smpl_ command line tool](smpl.html)
   * [Building Models with PostgreSQL](postgresql-orm.html)
   * [_Simple_ template system in depth](templates.html)
   * [Cookie-based session management](sessions.html)
