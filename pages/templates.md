@@ -3,6 +3,28 @@ title: Simple Templates
 showtoc: true
 ---
 
+_Simple_ comes with support for the embedded templating language defined in the
+package `simple-tempalates`. Templates let you embed dynamic content in HTML,
+JSON or any other text format you return in your responses.
+
+## Using with a _Simple_ app
+
+Adding template support in your app is as easy as declaring an instance of
+`HasTemplates` for your app settings:
+
+```haskell
+import Web.Simple.Templates
+
+data MyAppSettings = ...
+
+instance HasTemplates MyAppSettings
+```
+
+`HasTemplate` has default definitions for all of its methods. However, in most
+cases you'll probably want to override at least:
+
+_TODO_
+
 ## Language Description
 
 A template may contain plain-text, which is reproduced as is, as well as
@@ -32,8 +54,9 @@ literals:
 
 * __Booleans__ are the lower-case `true` and `false`
 * __Numbers__ are rationals, parsed according to the rules in attoparsec's
-`rational` parser (roughly, decimal numbers with an optional decimal point and
-optional exponent)
+[rational](http://hackage.haskell.org/package/attoparsec-0.10.4.0/docs/Data-Attoparsec-Text.html#v:rational)
+parser (roughly, decimal numbers with an optional decimal point and optional
+exponent)
 
 
 >     Pi is approximately $3.14159$
