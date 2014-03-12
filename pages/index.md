@@ -20,6 +20,7 @@ application with just a few simple commands:
 $ cabal install simple
 $ smpl create test_app
 $ cd test_app
+$ cabal install --only-dependencies
 $ cabal run
 ```
 

@@ -71,8 +71,7 @@ The directory contains a ready-to-run app with the following structure:
 |----------------|------------------------------------------------------------|
 | Blog/          | Parent directory for app specific modules                  |
 | Blog/Common.hs | A base module that defines the application type            |
-| db/            | An empty directory for defining the database schema        |
-| templates/     | The default folder for defining view templates             |
+| layouts/       | The default folder for defining view templates             |
 | views/         | The default folder for defining views                      |
 | Application.hs | Initial setup and route configuration                      |
 | blog.cabal     | Used by cabal to resolve package dependencies and compile the app|
@@ -83,9 +82,11 @@ The directory contains a ready-to-run app with the following structure:
 Our application is ready for us to get to work. Now we'll get a server up and
 running and start adding functionality to our application.
 
-_Simple_ apps can be run with any WAI compatible server, like
-[warp](http://hackage.haskell.org/package/warp). The generated `Main.hs` file
-does exactly this. The following commands will start a server on port 3000.
+_Simple_ apps can be run using the
+[warp](http://hackage.haskell.org/package/warp) web server (or any other
+[WAI](http://hackage/haskell.org/package/wai) compatible server). The generated
+`Main.hs` file does exactly this. The following commands will start a server on
+port 3000.
 
 ```bash
 $ cabal install --only-dependencies
@@ -93,7 +94,7 @@ $ cabal run
 ```
 
 To see the application in action, open a browser and navigate to
-[http://localhost:3000/](http://localhost:300). You should see the default
+[http://localhost:3000/](http://localhost:3000). You should see the default
 generated home page:
 
 ![](images/screenshot-hello.png "\"Hello World\" Screenshot")
@@ -191,7 +192,7 @@ routeMethod GET $ do
             filter (not . isPrefixOf ".") dataDir
       forM postFiles $ \postFile -> do
         withFile ("data" </> postFile) ReadMode $ \h -> do
-          title <- hGetLine postHandle
+          title <- hGetLine h
           return $ object ["id" .= postFile
                           , "title" .= title]
     render "index.html" $ object ["posts" .= posts]
@@ -348,6 +349,9 @@ Finally, we need to add a template in "views/new.html":
   <p><input type="submit" value="Create"/>
 </form>
 ```
+
+Now, [http://localhost:3000/new](http://localhost:3000/new):
+
 ![](images/screenshot-new.png "New Post Screenshot")
 
 ### Parsing the form
@@ -387,7 +391,7 @@ routeMethod POST $ routeTop $ do
             take (5 - length lastFileNum)
               [z | _ <- [0..], let z = '0'] ++
             lastFileNum
-      withFile ("data" </> fileName) WriteMode $ \h ->
+      withFile ("data" </> fileName) WriteMode $ \h -> do
         S8.hPutStrLn h title
         S8.hPutStr h body
   respond $ redirectTo "/"
@@ -453,6 +457,7 @@ import Network.HTTP.Types
 import System.Directory
 import System.FilePath
 import System.IO
+import Web.Frank
 import Web.Simple
 import Web.Simple.Templates
 
@@ -515,8 +520,9 @@ app runner = do
 ## Next Steps
 
   * [The _smpl_ command line tool](smpl.html)
-  * [Building Models with PostgreSQL](postgresql-orm.html)
+  * [Architecture of a _Simple_ app](architecture.html)
   * [_Simple_ template system in depth](templates.html)
+  * [Modeling data with PostgreSQL](postgresql-orm.html)
   * [Cookie-based session management](sessions.html)
   * [In depth reference](api.html)
 
