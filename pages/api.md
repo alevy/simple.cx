@@ -17,7 +17,7 @@ The API for each of the libraries is available on Hackage:
 You can check out the full source code for all the packages:
 
 ```bash
-git clone anonymous@gitstar.com:alevy/simple.git
+git clone https://github.com/alevy/simple.git
 ```
 
 The repo contains an example app (under the `blog-example/` folder).
