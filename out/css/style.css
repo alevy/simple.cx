@@ -30,6 +30,13 @@ h1, h2, h3 h4 {
   padding-bottom: 10px;
 }
 
+.warning {
+  padding: 5px;
+  font-style: italic;
+  border: 3px solid #fbf236;
+  background-color: #fff975;
+}
+
 #navbar {
   width: 100%;
   padding-top: 0px;

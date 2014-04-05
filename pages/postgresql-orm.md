@@ -3,6 +3,12 @@ title: PostgreSQL ORM
 showtoc: true
 ---
 
+<div class="warning">
+This document is still a draft. Please contribute by making suggestions, filing
+bugs or making pull requests at
+[htts://github.com/alevy/simple.cx](http://github.com/alevy/simple.cx)
+</div>
+
 PostgreSQL-ORM is an Object Relational Mapper (ORM) that compliments _Simple_.
 It knows how to map high-level
 operations to PostgreSQL flavored SQL for
