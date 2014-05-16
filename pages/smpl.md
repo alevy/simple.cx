@@ -60,7 +60,7 @@ smpl server
 Running the above command from within an application directory invokes
 `wai-handler-devel` to run an application in development mode. In particular,
 it expects `app` function from the `Application` module to have the type
-signature `(Appliction -> IO()) -> IO ()` and passes in a continuation to run
+signature `(Application -> IO()) -> IO ()` and passes in a continuation to run
 the `Application`. The server will watch for changed files, and recompile and
 reload the application as necessary.
 
