@@ -9,7 +9,7 @@ bugs or making pull requests at
 [htts://github.com/alevy/simple.cx](http://github.com/alevy/simple.cx)
 </div>
 
-PostgreSQL-ORM is an Object Relational Mapper (ORM) that compliments _Simple_.
+PostgreSQL-ORM is an Object Relational Mapper (ORM) that complements _Simple_.
 It knows how to map high-level
 operations to PostgreSQL flavored SQL for
 Haskell types that are instances of the `Model` type-class, as well as perform
@@ -102,7 +102,7 @@ key and list all rows. It also allows PostgreSQL-ORM to provide typed model
 associations (join relations). There are
 subtleties though. As mentioned above, the implementations of `modelInfo`,
 `modelRead` and `modelWrite` are closely intertwined, and careless
-implementations will lead to bugs that cannot be dedected at compile time.
+implementations will lead to bugs that cannot be detected at compile time.
 However, for common cases, where a `Model` is a record, PostgreSQL-ORM
 (optionally) uses Haskell Generics to automate the instance definition. In such
 cases, the a model definition might look like:
@@ -120,7 +120,7 @@ instance Model User
 Such an instance maps the `User` Haskell data type to a SQL table called "user"
 with columns `"userId"`, `"userFirstName"`, `"userLastName"` and `"userAge"`.
 Note that the `Generic` implementation of a `modelInfo` simply uses the contructor
-in lower case for the table name and the records as-is for the colum names.
+in lower case for the table name and the records as-is for the column names.
 This makes `modelInfo` a convenient point of interposition customizing the
 naming policy. For example, table names can be customized by updating the
 `modelTable` field of `defaultModelInfo`:
