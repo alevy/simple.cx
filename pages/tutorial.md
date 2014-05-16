@@ -19,12 +19,12 @@ application. At the end you will know
 This guide assumes you have a working version of the GHC Haskell compiler, the
 cabal package manager and an up-to-date version of the PostgreSQL database. The
 best way to get GHC and cabal setup is by installing the
-[Haskell platform](http://www.haskell.org/platform). Most linux distributions
-have PosgreSQL in their package repositories (e.g.
+[Haskell platform](http://www.haskell.org/platform). Most Linux distributions
+have PostgreSQL in their package repositories (e.g.
 `apt-get install postgresql`, `pacman -S postgresql`).
 Mac OS X comes with PostgreSQL, however, some of the utilities that this guide
 relies on (like `pg_ctl`) are not shipped by default. However, installing
-PostgreSQL from Homebrew will also install the approriate utilities.
+PostgreSQL from Homebrew will also install the appropriate utilities.
 
 The guide also assumes you have a basic understand of Haskell programming, web
 programming and preferably have built a few web applications in the past. For a
@@ -37,7 +37,7 @@ and/or [Real World Haskell](http://book.realworldhaskell.org/).
 ### Installing _Simple_
 
 Open up a terminal. Commands prefaced with a dollar sign ($) should be run in
-terminal. Use cabal to instal _Simple_:
+terminal. Use cabal to install _Simple_:
 
 ```bash
 $ cabal install simple
@@ -251,7 +251,7 @@ $endif$
 
 _Simple_ templates are embedded templates -- meaning they are embedded inside
 HTML, or whichever relevant output format. Template directives (like control
-statments and variable expansions) are surrounded by dollar signs ($). Our
+statements and variable expansions) are surrounded by dollar signs ($). Our
 template lists the post titles and links to the post itself at "/:post.id".
 For a comprehensive overview of the templating language, see the
 [Haddock documentation](http://hackage.haskell.org/package/simple-templates-0.7.0/docs/Web-Simple-Templates-Language.html#g:1).
@@ -278,7 +278,7 @@ another route in "Application.hs" (make sure it's as indented as the main
 route - two indentations):
 
 ```haskell
--- Repond to "/:post_id"
+-- Respond to "/:post_id"
 routeVar "post_id" $ routeTop $ do
   postId <- queryParam' "post_id"
   let postFile = "data" </> (takeFileName postId)
@@ -314,7 +314,7 @@ body:
 
 ![](images/screenshot-post.png "Show Post Screenshot")
 
-We nearly have a complete (albiet minimal) blog application. We're just missing
+We nearly have a complete (albeit minimal) blog application. We're just missing
 a way to generate the content in the first place...
 
 ## Creating content
@@ -331,7 +331,7 @@ routeName "new" $ routeTop $ do
   render "new.html" ()
 ```
 
-It's imperitive that this route appears before the route for displaying posts.
+It's imperative that this route appears before the route for displaying posts.
 That's because routes are evaluated in order, and `routeVar "post_id"` would
 match "/new", which we don't want.
 
@@ -399,10 +399,10 @@ routeMethod POST $ routeTop $ do
 
 Once we've extracted the parameters from the request body, we lookup the "title"
 and "body" fields (note that these just correspond to the "name" attribute we
-gave the inputs in our HTML form) and ensure they are not empty (whith
+gave the inputs in our HTML form) and ensure they are not empty (with
 `notNull` and `mfilter). If this fails (i.e. if "title" or "body" are either
-not present or empty), we redirect to the referer (the new post form). In a
-real application, we'd probabaly want to give the user some hint as to what
+not present or empty), we redirect to the referrer (the new post form). In a
+real application, we'd probably want to give the user some hint as to what
 went wrong. If the form is complete, we store the post and redirect to the post
 listings.
 
@@ -430,9 +430,9 @@ get "/:post_id" $ do
   ...
 ```
 
-will match GET requests which have exactly one uncomsumed directory in the path
+will match GET requests which have exactly one unconsumed directory in the path
 and use its contents for the "post_id" query parameters. The route is
-equivilant to (and in fact implemented as):
+equivalent to (and in fact implemented as):
 
 ```haskell
 routeMethod GET $ routePattern "/:post_id" $ routeTop
@@ -482,7 +482,7 @@ app runner = do
     get "/new" $ do
       render "new.html" ()
 
-    -- Repond to "/:post_id"
+    -- Respond to "/:post_id"
     get "/:post_id" $ routeTop $ do
       postId <- queryParam' "post_id"
       let postFile = "data" </> (takeFileName postId)

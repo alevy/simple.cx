@@ -4,7 +4,7 @@ showtoc: true
 ---
 
 _Simple_ comes with support for the embedded templating language defined in the
-package `simple-tempalates`. Templates let you embed dynamic content in HTML,
+package `simple-templates`. Templates let you embed dynamic content in HTML,
 JSON or any other text format you return in your responses.
 
 ## Using with a _Simple_ app
@@ -20,7 +20,7 @@ data MyAppSettings = ...
 instance HasTemplates MyAppSettings
 ```
 
-`HasTemplate` has default definitions for all of its methods. However, in most
+`HasTemplates` has default definitions for all of its methods. However, in most
 cases you'll probably want to override at least:
 
 _TODO_
@@ -29,7 +29,7 @@ _TODO_
 
 A template may contain plain-text, which is reproduced as is, as well as
 blocks of code, denoted by encapsulating them with dollar-signs (\$),
-supporting variable expansion, function invokation, conditionals and loops. For
+supporting variable expansion, function invocation, conditionals and loops. For
 example, given a global variable "answer" with the value *42*,
 
      The answer to the universe is $answer$.
@@ -62,7 +62,7 @@ exponent)
 >     Pi is approximately $3.14159$
 
 
-* **String** literalss are surrounded by double-quotes (\"). Double-quotes inside
+* **String** literals are surrounded by double-quotes (\"). Double-quotes inside
   a string can be escaped by proceeding it with a backslash (\\\"),
   however backslashes themselves do not need to be escaped:
 
@@ -71,7 +71,7 @@ exponent)
 
 * **Arrays** are surrounded by square-brackets ([ ]) and elements are
     comma separated. Elements can be literals, variables or function
-    invokations, and do not have to be the same type. Spaces bewteen elements
+    invokations, and do not have to be the same type. Spaces between elements
     are ignored:
 
 
@@ -87,7 +87,7 @@ exponent)
 ### Variable substitution
 
 Templates are evaluated with a single global variable called `@`. For
-example, you can refernce the global in your template like so:
+example, you can reference the global in your template like so:
 
      The value in my global is $@$.
 
@@ -101,12 +101,12 @@ name the field in the global object, for example:
      Field 'foo' is $foo$.
      Field 'bar.baz' is $bar.baz$.
 
-Strings, Numbers and Booleanss are meaningful when evaluated to text
+Strings, Numbers and Booleans are meaningful when evaluated to text
 in a template. Objects and Arrays render as a string representing their types
 (e.g. "[object]"). Null renders the empty string. However, values of all types
 can be used as arguments to functions, or in conditionals and loops.
 
-### Function Invokation
+### Function Invocation
 
 Functions are invoked with similar syntax to imperative languages:
 
@@ -124,7 +124,7 @@ is a variable expansion, whereas
 
      $mysymbol()$
 
-is a function invokation.
+is a function invocation.
 
 ### Conditionals
 

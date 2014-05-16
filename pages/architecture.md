@@ -2,7 +2,7 @@
 title: Architecture of a Simple app
 ---
 
-In this article, we'll unpack the architecutre of _Simple_ apps. Specifically,
+In this article, we'll unpack the architecture of _Simple_ apps. Specifically,
 we'll describe the `Controller` monad. After reading this, you will understand:
 
 1. how the `Controller` monad works
