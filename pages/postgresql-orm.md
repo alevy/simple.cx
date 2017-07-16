@@ -27,7 +27,7 @@ Generics do the rest:
 ...
 
 data Post = Post {
-  { postId :: DBKey
+    postId :: DBKey
   , postTitle :: Text
   , postBody :: Text
   } deriving (Generic)
@@ -108,11 +108,12 @@ However, for common cases, where a `Model` is a record, PostgreSQL-ORM
 cases, the a model definition might look like:
 
 ```haskell
-data User = User { userId :: DBKey
-                 , userFirstName :: String
-                 , userLastName :: String
-                 , userAge :: Integer }
-              deriving (Generic)
+data User = User {
+    userId :: DBKey
+  , userFirstName :: String
+  , userLastName :: String
+  , userAge :: Integer
+  } deriving (Generic)
 
 instance Model User
 ```
